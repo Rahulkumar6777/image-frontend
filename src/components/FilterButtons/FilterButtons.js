@@ -1,6 +1,6 @@
 // src/components/FilterButtons/FilterButtons.js
 import React from 'react';
-import './FilterButtons.css';
+import './FilterButtons.css'
 
 function FilterButtons({ categories, activeCategory, onFilterSelect }) {
   return (
