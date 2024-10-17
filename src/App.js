@@ -38,53 +38,53 @@ function App() {
   }, []);
 
   // Fetch images based on category and search term
-  useEffect(() => {
-    const fetchImages = async (category, search, pageNumber) => {
-      if (loading || !hasMore) return; // If currently loading or no more images, do not fetch
+  const fetchImages = async (category, search, pageNumber) => {
+    if (loading || !hasMore) return; // If currently loading or no more images, do not fetch
 
-      setLoading(true);
-      try {
-        let endpoint = `${process.env.REACT_APP_BACKEND_URL}/images`;
-        let params = {
-          page: pageNumber,
-          limit: 10,
-        };
+    setLoading(true);
+    try {
+      let endpoint = `${process.env.REACT_APP_BACKEND_URL}/images`;
+      let params = {
+        page: pageNumber,
+        limit: 10,
+      };
 
-        if (category && category !== '') {
-          params.category = category;
-        }
-
-        if (search && search !== '') {
-          params.search = search;
-        }
-
-        const res = await axios.get(endpoint, { params });
-
-        if (res.data.length === 0) {
-          setHasMore(false);  // No more images available
-        } else {
-          setImages((prevImages) => {
-            const newImages = res.data.filter(
-              (img) => !prevImages.some((prevImg) => prevImg._id === img._id)
-            );
-            return [...prevImages, ...newImages];  // Add new images to existing
-          });
-          setPage((prevPage) => prevPage + 1);  // Increment page after fetching
-        }
-      } catch (err) {
-        toast.error('Failed to fetch images');
-        console.error('Error fetching images:', err);
-      } finally {
-        setLoading(false);
+      if (category && category !== '') {
+        params.category = category;
       }
-    };
 
-    // Reset states and fetch images whenever category or search term changes
+      if (search && search !== '') {
+        params.search = search;
+      }
+
+      const res = await axios.get(endpoint, { params });
+
+      if (res.data.length === 0) {
+        setHasMore(false);  // No more images available
+      } else {
+        setImages((prevImages) => {
+          const newImages = res.data.filter(
+            (img) => !prevImages.some((prevImg) => prevImg._id === img._id)
+          );
+          return [...prevImages, ...newImages];  // Add new images to existing
+        });
+        setPage((prevPage) => prevPage + 1);  // Increment page after fetching
+      }
+    } catch (err) {
+      toast.error('Failed to fetch images');
+      console.error('Error fetching images:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Reset images when category or search term changes
+  useEffect(() => {
     setImages([]); // Clear current images
     setPage(1);    // Reset to first page
     setHasMore(true);  // Allow more images to be loaded
-    fetchImages(activeCategory, searchTerm, 1); // Fetch first page of images for the new category or search term
-  }, [activeCategory, searchTerm]);  // Trigger when category or search term changes
+    fetchImages(activeCategory, searchTerm, 1); // Fetch first page of images
+  }, [activeCategory, searchTerm]);
 
   // Infinite scroll event listener
   useEffect(() => {
@@ -102,7 +102,7 @@ function App() {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [page, hasMore, loading, activeCategory, searchTerm]);  // Trigger on page change
+  }, [page, hasMore, loading, activeCategory, searchTerm]);
 
   const handleCategoryChange = (category) => {
     if (category === activeCategory) {
