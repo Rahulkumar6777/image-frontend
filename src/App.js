@@ -147,7 +147,8 @@ function App() {
                 <FilterButtons
                   categories={categories}
                   activeCategory={activeCategory}
-                  onFilterSelect={handleFilterSelect}
+                  onFilterSelect={handleFilterSelect} // This is still for the "All" button
+                  onCategoryChange={handleCategoryChange} // This is for category filtering
                 />
                 <WallpapersGrid images={images} />
                 {loading && (
