@@ -18,11 +18,10 @@ function App() {
   const [categories, setCategories] = useState([]);
   const [activeCategory, setActiveCategory] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [hasMore, setHasMore] = useState(true); // To check if more images are available
-  const [page, setPage] = useState(1); // For pagination
-  const [loading, setLoading] = useState(false); // Loading state
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
 
-  // Fetch categories on component mount
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -33,42 +32,35 @@ function App() {
         console.error('Error fetching categories:', err);
       }
     };
-
     fetchCategories();
   }, []);
 
-  // Fetch images based on category and search term
-  const fetchImages = async (category, search, pageNumber) => {
-    if (loading || !hasMore) return; // If currently loading or no more images, do not fetch
+  useEffect(() => {
+    fetchImages(activeCategory, searchTerm, 1, true);
+  }, [activeCategory, searchTerm]);
 
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [page, hasMore, loading]);
+
+  const fetchImages = async (category, search, pageNumber, reset = false) => {
+    if (loading || !hasMore) return;
     setLoading(true);
     try {
       let endpoint = `${process.env.REACT_APP_BACKEND_URL}/images`;
-      let params = {
-        page: pageNumber,
-        limit: 10,
-      };
-
-      if (category && category !== '') {
-        params.category = category;
-      }
-
-      if (search && search !== '') {
-        params.search = search;
-      }
-
+      let params = { page: pageNumber, limit: 10 };
+      if (category) params.category = category;
+      if (search) params.search = search;
       const res = await axios.get(endpoint, { params });
-
-      if (res.data.length === 0) {
-        setHasMore(false);  // No more images available
-      } else {
+      if (res.data.length === 0) setHasMore(false);
+      else {
         setImages((prevImages) => {
-          const newImages = res.data.filter(
-            (img) => !prevImages.some((prevImg) => prevImg._id === img._id)
-          );
-          return [...prevImages, ...newImages];  // Add new images to existing
+          if (reset) return res.data;
+          const newImages = res.data.filter(img => !prevImages.some(prevImg => prevImg._id === img._id));
+          return [...prevImages, ...newImages];
         });
-        setPage((prevPage) => prevPage + 1);  // Increment page after fetching
+        setPage((prevPage) => prevPage + 1);
       }
     } catch (err) {
       toast.error('Failed to fetch images');
@@ -78,59 +70,31 @@ function App() {
     }
   };
 
-  // Reset images when category or search term changes
-  useEffect(() => {
-    setImages([]); // Clear current images
-    setPage(1);    // Reset to first page
-    setHasMore(true);  // Allow more images to be loaded
-    fetchImages(activeCategory, searchTerm, 1); // Fetch first page of images
-  }, [activeCategory, searchTerm]);
-
-  // Infinite scroll event listener
-  useEffect(() => {
-    const handleScroll = () => {
-      if (
-        window.innerHeight + document.documentElement.scrollTop >=
-          document.documentElement.offsetHeight - 500 &&
-        hasMore &&
-        !loading
-      ) {
-        const nextPage = page + 1;
-        fetchImages(activeCategory, searchTerm, nextPage);  // Fetch next page
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [page, hasMore, loading, activeCategory, searchTerm]);
-
-  const handleCategoryChange = (category) => {
-    if (category === activeCategory) {
-      setPage((prevPage) => prevPage + 1);
-      fetchImages(category, searchTerm, page + 1);  // Load more images (next page)
-    } else {
-      setImages([]); // Clear current images
-      setPage(1);    // Reset to first page
-      setHasMore(true);  // Allow more images to be loaded
-      setActiveCategory(category);  // Set the new category
-      setSearchTerm('');  // Clear search term
+  const handleScroll = () => {
+    if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 500 && hasMore && !loading) {
+      fetchImages(activeCategory, searchTerm, page);
     }
   };
 
   const handleSearch = (term) => {
-    setImages([]); // Clear current images
-    setPage(1);    // Reset to first page
-    setHasMore(true);  // Allow more images to be loaded
+    setPage(1);
+    setHasMore(true);
     setSearchTerm(term);
-    setActiveCategory(''); // Clear active category
+    setActiveCategory('');
+  };
+
+  const handleCategoryChange = (category) => {
+    setPage(1);
+    setHasMore(true);
+    setActiveCategory(category);
+    setSearchTerm('');
   };
 
   const handleFilterSelect = (category) => {
-    setImages([]); // Clear current images
-    setPage(1);    // Reset to first page
-    setHasMore(true);  // Allow more images to be loaded
-    setActiveCategory(category);  // Set new category filter
-    setSearchTerm('');  // Clear search term
+    setPage(1);
+    setHasMore(true);
+    setActiveCategory(category);
+    setSearchTerm('');
   };
 
   return (
@@ -148,8 +112,8 @@ function App() {
                 <FilterButtons
                   categories={categories}
                   activeCategory={activeCategory}
-                  onFilterSelect={handleFilterSelect} // This is still for the "All" button
-                  onCategoryChange={handleCategoryChange} // This is for category filtering
+                  onFilterSelect={handleFilterSelect}
+                  onCategoryChange={handleCategoryChange}
                 />
                 <WallpapersGrid images={images} />
                 {loading && (
@@ -164,7 +128,6 @@ function App() {
             </div>
           }
         />
-        {/* Redirect any unknown routes to home */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
