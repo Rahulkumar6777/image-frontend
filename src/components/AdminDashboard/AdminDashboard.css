@@ -1,0 +1,32 @@
+/* src/components/AdminDashboard/AdminDashboard.css */
+
+.admin-dashboard-container {
+    background-color: #2d3137;
+    min-height: 100vh;
+    padding: 20px;
+    color: #fff;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+.admin-header h1 {
+    color: #A1BE95;
+}
+
+.admin-home-link {
+    background-color: #A1BE95;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.admin-home-link:hover {
+    background-color: #8AA17D;
+}

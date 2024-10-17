@@ -1,0 +1,69 @@
+/* src/App.css */
+
+body {
+  font-family: sans-serif;
+  margin: 0;
+  background-color: #2d3137;
+  color: #fff;
+}
+
+.container {
+  margin: 0 auto;
+  padding: 20px;
+  text-align: center;
+  max-width: 1200px;
+  width: 100%;
+}
+
+/* Responsive Design */
+
+@media (max-width: 1200px) {
+  .container {
+      padding: 20px;
+      max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .logo {
+      font-size: 20px;
+  }
+
+  .search-form input,
+  .search-form button {
+      font-size: 14px;
+      padding: 8px;
+      margin: 4px 0;
+  }
+
+  .filter-button {
+      font-size: 14px;
+      padding: 8px 16px;
+  }
+
+  .wallpapers-grid {
+      grid-gap: 15px;
+  }
+}
+
+@media (max-width: 450px) {
+  .logo {
+      font-size: 18px;
+  }
+
+  .search-form input,
+  .search-form button {
+      font-size: 12px;
+      padding: 8px;
+      margin: 4px 0;
+  }
+
+  .filter-button {
+      font-size: 12px;
+      padding: 6px 12px;
+  }
+
+  .wallpapers-grid {
+      grid-gap: 10px;
+  }
+}

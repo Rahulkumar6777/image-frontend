@@ -1,0 +1,53 @@
+/* src/components/Header/Header.css */
+
+header {
+    background-color: #A1BE95;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    text-decoration: none;
+    color: #fff;
+    margin: 0;
+}
+
+.search-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.search-form {
+    display: flex;
+    width: 100%;
+    max-width: 300px;
+}
+
+.search-form input {
+    padding: 10px;
+    border: none;
+    background-color: #333;
+    color: #fff;
+    border-radius: 5px 0 0 5px;
+    font-size: 16px;
+    margin: 5px 0;
+    flex: 1;
+}
+
+.search-form button {
+    padding: 10px;
+    border: none;
+    background-color: #444;
+    color: #fff;
+    border-radius: 0 5px 5px 0;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 5px 0;
+}
