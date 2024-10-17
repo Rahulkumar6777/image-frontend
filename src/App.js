@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './components/Header/Header';
 import FilterButtons from './components/FilterButtons/FilterButtons';
 import WallpapersGrid from './components/WallpapersGrid/WallpapersGrid';
@@ -37,54 +37,54 @@ function App() {
     fetchCategories();
   }, []);
 
-  // Memoize fetchImages function to prevent it from being recreated every render
-  const fetchImages = useCallback(async (category, search, pageNumber) => {
-    if (loading || !hasMore) return;
-
-    setLoading(true);
-    try {
-      let endpoint = `${process.env.REACT_APP_BACKEND_URL}/images`;
-      let params = {
-        page: pageNumber,
-        limit: 10,
-      };
-
-      if (category && category !== '') {
-        params.category = category;
-      }
-
-      if (search && search !== '') {
-        params.search = search;
-      }
-
-      const res = await axios.get(endpoint, { params });
-
-      if (res.data.length === 0) {
-        setHasMore(false);  // No more images available
-      } else {
-        setImages((prevImages) => {
-          const newImages = res.data.filter(
-            (img) => !prevImages.some((prevImg) => prevImg._id === img._id)
-          );
-          return [...prevImages, ...newImages];  // Add new images to existing
-        });
-        setPage((prevPage) => prevPage + 1);  // Increment page after fetching
-      }
-    } catch (err) {
-      toast.error('Failed to fetch images');
-      console.error('Error fetching images:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [loading, hasMore]);  // Ensure it only updates when loading or hasMore changes
-
-  // Fetch images when category or search term changes
+  // Fetch images based on category and search term
   useEffect(() => {
+    const fetchImages = async (category, search, pageNumber) => {
+      if (loading || !hasMore) return; // If currently loading or no more images, do not fetch
+
+      setLoading(true);
+      try {
+        let endpoint = `${process.env.REACT_APP_BACKEND_URL}/images`;
+        let params = {
+          page: pageNumber,
+          limit: 10,
+        };
+
+        if (category && category !== '') {
+          params.category = category;
+        }
+
+        if (search && search !== '') {
+          params.search = search;
+        }
+
+        const res = await axios.get(endpoint, { params });
+
+        if (res.data.length === 0) {
+          setHasMore(false);  // No more images available
+        } else {
+          setImages((prevImages) => {
+            const newImages = res.data.filter(
+              (img) => !prevImages.some((prevImg) => prevImg._id === img._id)
+            );
+            return [...prevImages, ...newImages];  // Add new images to existing
+          });
+          setPage((prevPage) => prevPage + 1);  // Increment page after fetching
+        }
+      } catch (err) {
+        toast.error('Failed to fetch images');
+        console.error('Error fetching images:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Reset states and fetch images whenever category or search term changes
     setImages([]); // Clear current images
     setPage(1);    // Reset to first page
-    setHasMore(true);  // Reset hasMore to true for fetching more images
+    setHasMore(true);  // Allow more images to be loaded
     fetchImages(activeCategory, searchTerm, 1); // Fetch first page of images for the new category or search term
-  }, [activeCategory, searchTerm, fetchImages]);
+  }, [activeCategory, searchTerm]);  // Trigger when category or search term changes
 
   // Infinite scroll event listener
   useEffect(() => {
@@ -95,13 +95,14 @@ function App() {
         hasMore &&
         !loading
       ) {
-        fetchImages(activeCategory, searchTerm, page);
+        const nextPage = page + 1;
+        fetchImages(activeCategory, searchTerm, nextPage);  // Fetch next page
       }
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [page, hasMore, loading, activeCategory, searchTerm, fetchImages]);
+  }, [page, hasMore, loading, activeCategory, searchTerm]);  // Trigger on page change
 
   const handleCategoryChange = (category) => {
     if (category === activeCategory) {
@@ -113,7 +114,6 @@ function App() {
       setHasMore(true);  // Allow more images to be loaded
       setActiveCategory(category);  // Set the new category
       setSearchTerm('');  // Clear search term
-      fetchImages(category, '', 1);  // Fetch first page for the new category
     }
   };
 
