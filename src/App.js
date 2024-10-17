@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+// src/App.js
+import React, { useState, useEffect } from 'react';
 import Header from './components/Header/Header';
 import FilterButtons from './components/FilterButtons/FilterButtons';
 import WallpapersGrid from './components/WallpapersGrid/WallpapersGrid';
@@ -18,11 +19,12 @@ function App() {
   const [categories, setCategories] = useState([]);
   const [activeCategory, setActiveCategory] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true); // To check if more images are available
+  const [page, setPage] = useState(1); // For pagination
+  const [loading, setLoading] = useState(false); // Loading state
 
   useEffect(() => {
+    // Fetch categories on component mount
     const fetchCategories = async () => {
       try {
         const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/categories`);
@@ -32,23 +34,57 @@ function App() {
         console.error('Error fetching categories:', err);
       }
     };
+
     fetchCategories();
   }, []);
 
-  const fetchImages = useCallback(async (category, search, pageNumber, reset = false) => {
+  useEffect(() => {
+    // Reset images when category or search term changes
+    setImages([]);
+    setPage(1);
+    setHasMore(true);
+    fetchImages(activeCategory, searchTerm, 1);
+    // eslint-disable-next-line
+  }, [activeCategory, searchTerm]);
+
+  useEffect(() => {
+    // Infinite scroll event listener
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+    // eslint-disable-next-line
+  }, [page, hasMore, loading]);
+
+  const fetchImages = async (category, search, pageNumber) => {
     if (loading || !hasMore) return;
+
     setLoading(true);
     try {
+      // Construct API endpoint based on category and search
       let endpoint = `${process.env.REACT_APP_BACKEND_URL}/images`;
-      let params = { page: pageNumber, limit: 10 };
-      if (category) params.category = category;
-      if (search) params.search = search;
+      let params = {
+        page: pageNumber,
+        limit: 10,
+      };
+
+      if (category && category !== '') {
+        params.category = category;
+      }
+
+      if (search && search !== '') {
+        params.search = search;
+      }
+
       const res = await axios.get(endpoint, { params });
-      if (res.data.length === 0) setHasMore(false);
-      else {
+      // console.log('Fetched Images:', res.data); // Debugging
+
+      if (res.data.length === 0) {
+        setHasMore(false);
+      } else {
         setImages((prevImages) => {
-          if (reset) return res.data;
-          const newImages = res.data.filter(img => !prevImages.some(prevImg => prevImg._id === img._id));
+          // Avoid adding duplicate images based on _id
+          const newImages = res.data.filter(
+            (img) => !prevImages.some((prevImg) => prevImg._id === img._id)
+          );
           return [...prevImages, ...newImages];
         });
         setPage((prevPage) => prevPage + 1);
@@ -59,42 +95,41 @@ function App() {
     } finally {
       setLoading(false);
     }
-  }, [loading, hasMore]);
+  };
 
-  const handleScroll = useCallback(() => {
-    if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 500 && hasMore && !loading) {
+  const handleScroll = () => {
+    if (
+      window.innerHeight + document.documentElement.scrollTop >=
+        document.documentElement.offsetHeight - 500 &&
+      hasMore &&
+      !loading
+    ) {
       fetchImages(activeCategory, searchTerm, page);
     }
-  }, [hasMore, loading, fetchImages, activeCategory, searchTerm, page]);
-
-  useEffect(() => {
-    fetchImages(activeCategory, searchTerm, 1, true);
-  }, [activeCategory, searchTerm, fetchImages]);
-
-  useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [handleScroll]);
+  };
 
   const handleSearch = (term) => {
+    setImages([]); // Clear current images
     setPage(1);
     setHasMore(true);
     setSearchTerm(term);
-    setActiveCategory('');
+    setActiveCategory(''); // Reset category filter
   };
 
   const handleCategoryChange = (category) => {
+    setImages([]); // Clear current images
     setPage(1);
     setHasMore(true);
     setActiveCategory(category);
-    setSearchTerm('');
+    setSearchTerm(''); // Clear search term
   };
 
   const handleFilterSelect = (category) => {
+    setImages([]); // Clear current images
     setPage(1);
     setHasMore(true);
     setActiveCategory(category);
-    setSearchTerm('');
+    setSearchTerm(''); // Clear search term
   };
 
   return (
@@ -112,8 +147,8 @@ function App() {
                 <FilterButtons
                   categories={categories}
                   activeCategory={activeCategory}
-                  onFilterSelect={handleFilterSelect}
-                  onCategoryChange={handleCategoryChange}
+                  onFilterSelect={handleFilterSelect} // This is still for the "All" button
+                  onCategoryChange={handleCategoryChange} // This is for category filtering
                 />
                 <WallpapersGrid images={images} />
                 {loading && (
@@ -128,6 +163,7 @@ function App() {
             </div>
           }
         />
+        {/* Redirect any unknown routes to home */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
