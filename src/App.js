@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Header from './components/Header/Header';
 import FilterButtons from './components/FilterButtons/FilterButtons';
 import WallpapersGrid from './components/WallpapersGrid/WallpapersGrid';
@@ -35,16 +35,7 @@ function App() {
     fetchCategories();
   }, []);
 
-  useEffect(() => {
-    fetchImages(activeCategory, searchTerm, 1, true);
-  }, [activeCategory, searchTerm]);
-
-  useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [page, hasMore, loading]);
-
-  const fetchImages = async (category, search, pageNumber, reset = false) => {
+  const fetchImages = useCallback(async (category, search, pageNumber, reset = false) => {
     if (loading || !hasMore) return;
     setLoading(true);
     try {
@@ -68,13 +59,22 @@ function App() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [loading, hasMore]);
 
-  const handleScroll = () => {
+  const handleScroll = useCallback(() => {
     if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 500 && hasMore && !loading) {
       fetchImages(activeCategory, searchTerm, page);
     }
-  };
+  }, [hasMore, loading, fetchImages, activeCategory, searchTerm, page]);
+
+  useEffect(() => {
+    fetchImages(activeCategory, searchTerm, 1, true);
+  }, [activeCategory, searchTerm, fetchImages]);
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [handleScroll]);
 
   const handleSearch = (term) => {
     setPage(1);
