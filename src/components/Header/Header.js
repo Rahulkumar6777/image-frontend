@@ -32,7 +32,7 @@ function Header({ onSearch }) {
 
   // Handle login button click
   const handleLoginClick = () => {
-    window.location.href = 'https://4kimage.netlify.app/auth'; // Redirect to admin page
+    window.location.href = 'https://4kimage.netlify.app/admin'; // Redirect to admin page
   };
 
   return (
