@@ -1,4 +1,3 @@
-// src/components/Header/Header.js
 import React, { useState, useEffect } from 'react';
 import './Header.css';
 import { Link, useNavigate } from 'react-router-dom';
@@ -31,6 +30,11 @@ function Header({ onSearch }) {
     navigate('/'); // Redirect to home after search
   };
 
+  // Handle login button click
+  const handleLoginClick = () => {
+    window.location.href = 'http://localhost:3000/admin'; // Redirect to admin page
+  };
+
   return (
     <header>
       <div className="container">
@@ -49,6 +53,12 @@ function Header({ onSearch }) {
             </button>
           </form>
         </div>
+        <button
+          className="onlyadminloginbutton"
+          onClick={handleLoginClick}
+        >
+          Login
+        </button>
       </div>
     </header>
   );
